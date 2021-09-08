@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "description": "trading bot mainly for trading cryptocurrency",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "test": "test"
+    "run": "node index.js"
   },
   "repository": {
     "type": "git",
@@ -20,5 +21,11 @@
   "bugs": {
     "url": "https://github.com/SAOJulius/Trading-Bot/issues"
   },
-  "homepage": "https://github.com/SAOJulius/Trading-Bot#readme"
+  "homepage": "https://github.com/SAOJulius/Trading-Bot#readme",
+  "dependencies": {
+    "axios": "^0.21.4"
+  },
+  "devDependencies": {
+    "prettier": "^2.3.2"
+  }
 }
