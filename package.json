@@ -1,0 +1,24 @@
+{
+  "name": "trading-bot",
+  "version": "1.0.0",
+  "description": "trading bot mainly for trading cryptocurrency",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SAOJulius/Trading-Bot.git"
+  },
+  "keywords": [
+    "bot",
+    "trading",
+    "trading-bot"
+  ],
+  "author": "julius krams, louis eiermann",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/SAOJulius/Trading-Bot/issues"
+  },
+  "homepage": "https://github.com/SAOJulius/Trading-Bot#readme"
+}
