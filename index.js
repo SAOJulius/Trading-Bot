@@ -1,5 +1,6 @@
-const Apiclient = require('./api/client.js')
+import ApiClient from 'api/client'
 
-const apiclient = new Apiclient()
+let client = new ApiClient()
+client.getApiClient()
 
-setInterval(apiclient.displayCurrentPrices, 1000)
+setInterval(ApiClient.getApiClient, 1000)
