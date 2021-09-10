@@ -1,5 +1,5 @@
-import Apiclient from './api/client.js'
+const Apiclient = require('./api/client.js')
 
 const apiclient = new Apiclient()
 
-apiclient.displayCurrentPrices()
+setInterval(apiclient.displayCurrentPrices, 1000)
