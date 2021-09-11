@@ -1,6 +1,5 @@
-import ApiClient from 'api/client'
+import ApiClient from './api/client.js'
 
 let client = new ApiClient()
-client.getApiClient()
 
-setInterval(ApiClient.getApiClient, 1000)
+client.getBalance()

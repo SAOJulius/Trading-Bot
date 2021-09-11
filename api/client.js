@@ -1,11 +1,25 @@
 import Binance from 'node-binance-api'
+import dotenv from 'dotenv'
 
 export default class ApiClient {
-    getApiClient() {
-        return new Binance().options({
-            APIKEY: 'YIytFyvhOJ3N3I09gTtdu0gjt8u7dtSu3UsAw59Gfj68PdPfAUmIbWo7U44ahunp',
+    constructor() {
+        dotenv.config()
+        this.client = new Binance().options({
+            APIKEY: process.env.BINANCE_TEST_KEY,
             APISECRET:
-                'KYgckMDKoZ3StiOBZu6GrSt2FFiqUWB2wMNlR3iMDd31ZsprfJzgbimyZLV6vp49',
+                process.env.BINANCE_TEST_SECRET,
+            useServerTime: true,
+            verbose: true,
+            urls: {
+                base: 'https://testnet.binance.vision/api/',
+                combineStream: 'wss://testnet.binance.vision/stream?streams=',
+                stream: 'wss://testnet.binance.vision/ws/',
+            },
+        })
+    }
+    getBalance() {
+        this.client.balance().then((res) => {
+            console.log(res)
         })
     }
 }
