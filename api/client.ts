@@ -1,33 +1,34 @@
 import Binance from 'node-binance-api'
-import dotenv from 'dotenv'
+import * as dotenv from 'dotenv'
 import axios from 'axios'
 import promptSync from 'prompt-sync'
 
 const prompt = promptSync({ sigint: true })
 
 export default class BinanceAccount {
+    positions: Array<any>
+    possibleActivePositions: Number
+    active: Boolean = false
+    refreshIntervalId: ReturnType<typeof setTimeout>
+    referenceAsset: String = 'USDT'
+    client: Binance
     constructor() {
         dotenv.config()
         this.client = new Binance().options({
             APIKEY: process.env.BINANCE_API_KEY,
             APISECRET: process.env.BINANCE_API_SECRET,
         })
-        this.possibleActivePositions = 1
-        this.positions = []
-        this.active = true
-        this.botTrading = false
-        this.referenceAsset = 'USDT'
     }
     startCommandInterface() {
         console.log(
             "Welcome to the Trading Bot. To see a list of commands type 'help'"
         )
         while (this.active === true) {
-            const userInput = prompt('Ready for Commands')
+            const userInput = prompt('Ready for Commands > ')
             switch (userInput) {
                 case 'help':
                     console.log(
-                        'Available Commands: \n' +
+                        '\n Available Commands: \n' +
                             'help - display info on available commands \n' +
                             'exit - exit shell \n' +
                             'start - start trading process \n' +
@@ -47,16 +48,15 @@ export default class BinanceAccount {
         }
     }
     startTrading() {
-        console.log('starting to trade...')
-        while (this.botTrading === true) {
-            setInterval(this.checkSituation, 60000)
-        }
+        console.log('trading started')
+        this.refreshIntervalId = setInterval(this.checkSituation, 1000)
     }
     stopTrading() {
-        this.botTrading = false
+        clearInterval(this.refreshIntervalId)
         console.log('stopped all trading')
     }
     checkSituation() {
+        console.log('situation checked')
         this.checkSellSignal()
         this.checkBuySignal()
     }
@@ -77,17 +77,16 @@ export default class BinanceAccount {
         if (this.positions.length < this.possibleActivePositions) {
             let opportunities = []
             for (let assetOpenForTrade of largeCaps) {
-                this.client.prevDay(
-                    assetOpenForTrade.symbol + this.referenceAsset,
-                    (error, prevDay) => {
-                        if (prevDay.priceChangePercent <= -5.0) {
+                this.client
+                    .prevDay(assetOpenForTrade.symbol + this.referenceAsset)
+                    .then((res) => {
+                        if (res.priceChangePercent <= -5.0) {
                             opportunities.push({
-                                symbol: prevDay.symbol,
-                                priceChangePercent: prevDay.priceChangePercent,
+                                symbol: res.symbol,
+                                priceChangePercent: res.priceChangePercent,
                             })
                         }
-                    }
-                )
+                    })
             }
             if (opportunities.length > 0) {
                 let bestOpportunity = {
@@ -102,7 +101,7 @@ export default class BinanceAccount {
                         bestOpportunity = opportunity
                     }
                 }
-                this.buy(bestOpportunity)
+                this.buy(bestOpportunity, 1)
             }
         } else {
             console.log('Position limit exceeded')
@@ -110,18 +109,22 @@ export default class BinanceAccount {
     }
     checkSellSignal() {
         if (this.positions.length > 0) {
-            for (let position in this.positions) {
-                if (position.price < positions.price + 2) {
+            for (let position of this.positions) {
+                let currentPrice
+                this.client.prices(position.symbol).then((res) => {
+                    currentPrice = res[position.symbol]
+                })
+                if ((position.price + position.price) * 0.01 <= currentPrice)
                     this.sell(position)
-                }
             }
         }
     }
-    buy(position, quantity) {
+    buy(asset, quantity) {
         this.client
-            .marketBuy(position.symbol, quantity)
+            .marketBuy(asset.symbol, quantity)
             .then((res) => {
                 console.log(res)
+                this.positions.push({ symbol: res.symbol, price: res.price })
             })
             .catch((error) => {
                 console.log(error)
