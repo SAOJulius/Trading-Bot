@@ -1,4 +1,4 @@
-import BinanceAccount from './api/client.js'
+import BinanceAccount from './client'
 
 let client = new BinanceAccount()
 

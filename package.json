@@ -2,10 +2,11 @@
   "name": "trading-bot",
   "version": "1.0.0",
   "description": "trading bot mainly for trading cryptocurrency",
-  "main": "index.ts",
-  "type": "module",
+  "main": "src/index.ts",
   "scripts": {
-    "start": "node index.ts"
+    "start:build": "tsc -w",
+    "start:run": "nodemon build/index.js",
+    "start": "concurrently npm:start:*"
   },
   "repository": {
     "type": "git",
@@ -24,7 +25,11 @@
   "homepage": "https://github.com/SAOJulius/Trading-Bot#readme",
   "devDependencies": {
     "@types/node": "^16.9.1",
+    "@types/prompt-sync": "^4.1.1",
+    "concurrently": "^6.2.1",
+    "nodemon": "^2.0.12",
     "prettier": "^2.3.2",
+    "ts-node": "^10.2.1",
     "typescript": "^4.4.3"
   },
   "dependencies": {

@@ -7,23 +7,29 @@ const prompt = promptSync({ sigint: true })
 
 export default class BinanceAccount {
     positions: Array<any>
-    possibleActivePositions: Number
-    active: Boolean = false
-    refreshIntervalId: ReturnType<typeof setTimeout>
-    referenceAsset: String = 'USDT'
+    possibleActivePositions: number
+    active: boolean
+    refreshIntervalId: any
+    referenceAsset: string
     client: Binance
+    currentLargecaps: Array<any>
     constructor() {
         dotenv.config()
         this.client = new Binance().options({
             APIKEY: process.env.BINANCE_API_KEY,
             APISECRET: process.env.BINANCE_API_SECRET,
         })
+        this.referenceAsset = 'USDT'
+        this.active = false
+        this.possibleActivePositions = 1
+        this.positions = []
+        this.currentLargecaps = []
     }
     startCommandInterface() {
         console.log(
             "Welcome to the Trading Bot. To see a list of commands type 'help'"
         )
-        while (this.active === true) {
+        while (this.active) {
             const userInput = prompt('Ready for Commands > ')
             switch (userInput) {
                 case 'help':
@@ -61,7 +67,6 @@ export default class BinanceAccount {
         this.checkBuySignal()
     }
     checkBuySignal() {
-        let largeCaps
         axios
             .get(
                 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/map?limit=10&sort=cmc_rank',
@@ -72,14 +77,15 @@ export default class BinanceAccount {
                 }
             )
             .then((res) => {
-                largeCaps = res.data.data
+                this.currentLargecaps = res.data.data
             })
         if (this.positions.length < this.possibleActivePositions) {
-            let opportunities = []
-            for (let assetOpenForTrade of largeCaps) {
+            let opportunities: { symbol: any; priceChangePercent: number }[] =
+                []
+            for (let assetOpenForTrade of this.currentLargecaps) {
                 this.client
                     .prevDay(assetOpenForTrade.symbol + this.referenceAsset)
-                    .then((res) => {
+                    .then((res: any) => {
                         if (res.priceChangePercent <= -5.0) {
                             opportunities.push({
                                 symbol: res.symbol,
@@ -90,7 +96,7 @@ export default class BinanceAccount {
             }
             if (opportunities.length > 0) {
                 let bestOpportunity = {
-                    symbol: null,
+                    symbol: '',
                     priceChangePercent: 0.0,
                 }
                 for (let opportunity of opportunities) {
@@ -110,8 +116,8 @@ export default class BinanceAccount {
     checkSellSignal() {
         if (this.positions.length > 0) {
             for (let position of this.positions) {
-                let currentPrice
-                this.client.prices(position.symbol).then((res) => {
+                let currentPrice: any
+                this.client.prices(position.symbol).then((res: any) => {
                     currentPrice = res[position.symbol]
                 })
                 if ((position.price + position.price) * 0.01 <= currentPrice)
@@ -119,24 +125,35 @@ export default class BinanceAccount {
             }
         }
     }
-    buy(asset, quantity) {
+    /**
+     *
+     * @param asset
+     * @param quantity
+     */
+    buy(
+        asset: { symbol: string; priceChangePercent: number },
+        quantity: number
+    ) {
         this.client
             .marketBuy(asset.symbol, quantity)
-            .then((res) => {
+            .then((res: any) => {
                 console.log(res)
                 this.positions.push({ symbol: res.symbol, price: res.price })
             })
-            .catch((error) => {
+            .catch((error: any) => {
                 console.log(error)
             })
     }
-    sell(position) {
+    /**
+     * @param position
+     */
+    sell(position: { symbol: string }) {
         this.client
             .marketSell(position.symbol)
-            .then((res) => {
+            .then((res: JSON) => {
                 console.log(res)
             })
-            .catch((error) => {
+            .catch((error: any) => {
                 console.log(error)
             })
     }
