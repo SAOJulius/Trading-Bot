@@ -26,6 +26,7 @@ export default class BinanceAccount {
         this.currentLargecaps = []
     }
     startCommandInterface() {
+        this.active = true
         console.log(
             "Welcome to the Trading Bot. To see a list of commands type 'help'"
         )
@@ -54,15 +55,15 @@ export default class BinanceAccount {
         }
     }
     startTrading() {
-        console.log('trading started')
+        console.log('\n trading started')
         this.refreshIntervalId = setInterval(this.checkSituation, 1000)
     }
     stopTrading() {
         clearInterval(this.refreshIntervalId)
-        console.log('stopped all trading')
+        console.log('\n stopped all trading')
     }
     checkSituation() {
-        console.log('situation checked')
+        console.log('\n situation checked')
         this.checkSellSignal()
         this.checkBuySignal()
     }
@@ -126,7 +127,6 @@ export default class BinanceAccount {
         }
     }
     /**
-     *
      * @param asset
      * @param quantity
      */

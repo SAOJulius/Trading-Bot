@@ -2,11 +2,9 @@
   "name": "trading-bot",
   "version": "1.0.0",
   "description": "trading bot mainly for trading cryptocurrency",
-  "main": "src/index.ts",
+  "main": "src/index.js",
   "scripts": {
-    "start:build": "tsc -w",
-    "start:run": "nodemon build/index.js",
-    "start": "concurrently npm:start:*"
+    "start": "tsc && node .build/index.js"
   },
   "repository": {
     "type": "git",
