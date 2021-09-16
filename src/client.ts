@@ -6,13 +6,13 @@ import promptSync from 'prompt-sync'
 const prompt = promptSync({ sigint: true })
 
 export default class BinanceAccount {
-    positions: Array<any>
+    positions: Array<{ symbol: string; price: number }>
     possibleActivePositions: number
     active: boolean
     refreshIntervalId: any
     referenceAsset: string
     client: Binance
-    currentLargecaps: Array<any>
+    currentLargecaps: Array<{ symbol: number }>
     constructor() {
         dotenv.config()
         this.client = new Binance().options({
@@ -25,7 +25,7 @@ export default class BinanceAccount {
         this.positions = []
         this.currentLargecaps = []
     }
-    startCommandInterface() {
+    public startCommandInterface = (): void => {
         this.active = true
         console.log(
             "Welcome to the Trading Bot. To see a list of commands type 'help'"
@@ -54,20 +54,20 @@ export default class BinanceAccount {
             }
         }
     }
-    startTrading() {
-        console.log('\n trading started')
-        this.refreshIntervalId = setInterval(this.checkSituation, 1000)
+    private startTrading = (): void => {
+        this.refreshIntervalId = global.setInterval(this.checkSituation, 100)
+        console.log('trading started')
     }
-    stopTrading() {
+    private stopTrading(): void {
         clearInterval(this.refreshIntervalId)
-        console.log('\n stopped all trading')
+        console.log('stopped all trading')
     }
-    checkSituation() {
-        console.log('\n situation checked')
+    private checkSituation(): void {
+        console.log('situation checked')
         this.checkSellSignal()
         this.checkBuySignal()
     }
-    checkBuySignal() {
+    private checkBuySignal = (): void => {
         axios
             .get(
                 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/map?limit=10&sort=cmc_rank',
@@ -81,19 +81,26 @@ export default class BinanceAccount {
                 this.currentLargecaps = res.data.data
             })
         if (this.positions.length < this.possibleActivePositions) {
-            let opportunities: { symbol: any; priceChangePercent: number }[] =
-                []
+            let opportunities: {
+                symbol: string
+                priceChangePercent: number
+            }[] = []
             for (let assetOpenForTrade of this.currentLargecaps) {
                 this.client
                     .prevDay(assetOpenForTrade.symbol + this.referenceAsset)
-                    .then((res: any) => {
-                        if (res.priceChangePercent <= -5.0) {
-                            opportunities.push({
-                                symbol: res.symbol,
-                                priceChangePercent: res.priceChangePercent,
-                            })
+                    .then(
+                        (res: {
+                            symbol: string
+                            priceChangePercent: number
+                        }) => {
+                            if (res.priceChangePercent <= -5.0) {
+                                opportunities.push({
+                                    symbol: res.symbol,
+                                    priceChangePercent: res.priceChangePercent,
+                                })
+                            }
                         }
-                    })
+                    )
             }
             if (opportunities.length > 0) {
                 let bestOpportunity = {
@@ -114,13 +121,15 @@ export default class BinanceAccount {
             console.log('Position limit exceeded')
         }
     }
-    checkSellSignal() {
+    private checkSellSignal = (): void => {
         if (this.positions.length > 0) {
             for (let position of this.positions) {
-                let currentPrice: any
-                this.client.prices(position.symbol).then((res: any) => {
-                    currentPrice = res[position.symbol]
-                })
+                let currentPrice: number | any
+                this.client
+                    .prices(position.symbol)
+                    .then((res: Array<{ price: number }>) => {
+                        currentPrice = res[0].price
+                    })
                 if ((position.price + position.price) * 0.01 <= currentPrice)
                     this.sell(position)
             }
@@ -130,30 +139,30 @@ export default class BinanceAccount {
      * @param asset
      * @param quantity
      */
-    buy(
+    private buy = (
         asset: { symbol: string; priceChangePercent: number },
         quantity: number
-    ) {
+    ): void => {
         this.client
             .marketBuy(asset.symbol, quantity)
-            .then((res: any) => {
+            .then((res: { symbol: string; price: number }) => {
                 console.log(res)
                 this.positions.push({ symbol: res.symbol, price: res.price })
             })
-            .catch((error: any) => {
+            .catch((error: unknown) => {
                 console.log(error)
             })
     }
     /**
      * @param position
      */
-    sell(position: { symbol: string }) {
+    private sell = (position: { symbol: string }): void => {
         this.client
             .marketSell(position.symbol)
             .then((res: JSON) => {
                 console.log(res)
             })
-            .catch((error: any) => {
+            .catch((error: unknown) => {
                 console.log(error)
             })
     }

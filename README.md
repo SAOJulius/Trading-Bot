@@ -5,7 +5,7 @@ node.js https://nodejs.org/en/download/ oder ```apt install nodejs``` und npm
 ```npm install``` im Projektordner \
 Prettier Codeformatierung in den IDE Einstellungen konfigurieren
 ## Verfügbare Befehle
-```npm run``` startet den Bot
+```npm start``` startet den Bot
 ## Benutzung der Binance API
 API Dokumentation: https://binance-docs.github.io/apidocs/spot/en/#change-log \
 Reale Endpoints: https://api.binance.com/api \
